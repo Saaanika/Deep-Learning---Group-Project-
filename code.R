@@ -31,6 +31,10 @@ test_texts  <- test_df$OriginalTweet
 train_labels_raw <- train_df$Sentiment
 test_labels_raw  <- test_df$Sentiment
 
+# Cleaning text to ensure consistent encoding (with no special symbols); had to be done as was having errors with processing
+train_texts <- iconv(train_texts, to = "UTF-8", sub = "")
+test_texts  <- iconv(test_texts,  to = "UTF-8", sub = "")
+
 
 # Verifying number of samples and counts
 summary(train_texts)      
@@ -38,7 +42,6 @@ summary(train_labels_raw)     #41157 training samples (no missing labels)
 
 summary(test_texts)
 summary(test_labels_raw)      #3798 test samples (no missing labels)
-
 
 
 # ------------------------------------------------------------------------------
@@ -54,10 +57,6 @@ max(word_counts)   #maximum length of a single tweet is 64, so max_len can be se
 
 # `num_words` controls the size of the vocabulary (or how many unique words the model knows);words frequency distribution can be looked at to determine what's a good number
 
-# Cleaning text to ensure consistent encoding (with no special symbols); had to be done as was having errors with processing
-train_texts <- iconv(train_texts, to = "UTF-8", sub = "")
-test_texts  <- iconv(test_texts,  to = "UTF-8", sub = "")
-
 # Combining all tweets into one string, converting to lowercase, and splitting into words to find all words
 all_words <- unlist(strsplit(tolower(paste(train_texts, collapse = " ")), " "))
 
@@ -65,7 +64,7 @@ all_words <- unlist(strsplit(tolower(paste(train_texts, collapse = " ")), " "))
 word_freq <- table(all_words)
 
 
-cat("Total unique words:", length(word_freq))     #total number of unique words is 129643
+cat("Total unique words:", length(word_freq))     #total number of unique words is 129648
 cat("Words appearing >= 5 times:", sum(word_freq >= 5))   #number of words appearing >= 5 is 13667
 cat("Words appearing >= 10 times:", sum(word_freq >= 10))  #number of words appearing >= 5 is 7957
 
@@ -97,7 +96,7 @@ adapt(vec_int, train_texts)
 
 # Looking at the vocabulary (optional, bu wanted to for understanding)
 vocab <- vec_int$get_vocabulary()
-vocab
+vocab[1:20]   # First 20 tokens in the vocabulary 
 cat("Found", length(vocab), "tokens in learned vocabulary (includes OOV at index 1).\n")   #Confirming 15000 tokens including OOV (Out-Of-Vocabulary) or placeholder token used for words not seen during training
 
 
@@ -128,6 +127,9 @@ num_classes <- 5
 y_train <- to_categorical(y_train_int, num_classes = num_classes)
 y_test  <- to_categorical(y_test_int,  num_classes = num_classes)
 
+# Check class distribution
+table(train_labels_raw)
+prop.table(table(train_labels_raw))
 
 # ------------------------------------------------------------------------------
 
