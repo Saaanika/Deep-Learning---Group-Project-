@@ -133,8 +133,60 @@ prop.table(table(train_labels_raw))
 
 # ------------------------------------------------------------------------------
 
-# Part Five: Shuffling Training Data
+# Part Five: Shuffling and Splitting Training Data 
 I <- sample.int(nrow(x_train))
 x_train     <- x_train[I, ]
-y_train     <- y_train[I, ]
-y_train_int <- y_train_int[I]
+y_train     <- y_train[I, ]   
+
+
+# Train and Test Validation Split
+set.seed(123)
+
+n <- nrow(x_train)
+val_id <- sample(1:n, size = 0.2 * n)
+
+x_val <- x_train[val_id, ]
+y_val <- y_train[val_id, ]
+
+x_train_final <- x_train[-val_id, ]
+y_train_final <- y_train[-val_id, ]
+
+# ------------------------------------------------------------------------------
+
+# Part Five: Building Feedforward Neural Network
+
+# Setting embedding dimension
+embedding_dim <- 75  #as 100 was used for 20,000 word vocabulary from tutorial, 75 was chosen (proportional) 
+
+
+# 5.1 - One Hidden Dense Layer (with Embedding) 
+ff_model1 <- keras_model_sequential() %>%
+  layer_embedding(input_dim    = num_words,      #total number of words (max features)
+                  output_dim   = embedding_dim) %>%  #embedding dimension
+  layer_flatten() %>%
+  layer_dense(units = 32, activation = "relu") %>%  #hidden dense layer, values from tutorial 9
+  layer_dense(units = 5, activation = "softmax")    #softmax used for multiclass classification problems (5 classes)
+
+
+# Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
+ff_model1$build(input_shape = shape(NULL, maxlen))
+
+# Getting model summary 
+summary(ff_model1)   #total and trainable parameters: 1,278,797
+
+# Compiling first FF model
+ff_model1 %>% compile(
+  optimizer = optimizer_rmsprop(learning_rate = 1e-4),      #rmsprop commonly used (keeping learning rate value low)
+  loss = "categorical_crossentropy",                        #multiclass classification problem
+  metrics = c("accuracy")
+)
+
+
+# Fitting the model to the data
+ff_model1history <- ff_model1 %>% fit(
+  x_train_final, y_train_final,
+  epochs = 20,             #values taken from tutorial (will be kept consistent for all models for fair comparison)
+  batch_size = 32,        
+  validation_data = list(x_val, y_val)   
+)
+
