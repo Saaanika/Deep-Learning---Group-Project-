@@ -158,7 +158,7 @@ y_train_final <- y_train[-val_id, ]
 # Setting embedding dimension
 embedding_dim <- 75  #as 100 was used for 20,000 word vocabulary from tutorial, 75 was chosen (proportional) 
 
-
+                      
 # 5.1 - One Hidden Dense Layer 
 ff_model1 <- keras_model_sequential() %>%
   layer_embedding(input_dim    = num_words,      #total number of words (max features)
@@ -183,7 +183,7 @@ ff_model1 %>% compile(
 # Fitting the model to the data
 ff_model1history <- ff_model1 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             
+  epochs = 15,            #15 was found to be best number of epochs overall
   batch_size = 32,        #values taken from tutorial (will be kept consistent for all models for fair comparison), 
   validation_data = list(x_val, y_val)   
 )
@@ -197,6 +197,7 @@ ff_model12 <- keras_model_sequential() %>%
   layer_dense(units = 32, activation = "relu") %>%  #hidden dense layer, values from tutorial 9
   layer_dropout(rate = 0.5) %>%                     #adding dropout layer (rate of 50%)
   layer_dense(units = 5, activation = "softmax")    #softmax used for multiclass classification problems (5 classes)
+
 
 # Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
 ff_model12$build(input_shape = shape(NULL, maxlen))
@@ -214,7 +215,7 @@ ff_model12 %>% compile(
 # Fitting the model to the data
 ff_model12history <- ff_model12 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             
+  epochs = 15,             
   batch_size = 32,        
   validation_data = list(x_val, y_val)   
 )
@@ -249,7 +250,7 @@ ff_model2 %>% compile(
 # Fitting the model to the data
 ff_model2history <- ff_model2 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             #values taken from tutorial (will be kept consistent for all models for fair comparison)
+  epochs = 15,             
   batch_size = 32,        
   validation_data = list(x_val, y_val)   
 )
@@ -286,7 +287,7 @@ ff_model22 %>% compile(
 # Fitting the model to the data
 ff_model22history <- ff_model22 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             #values taken from tutorial (will be kept consistent for all models for fair comparison)
+  epochs = 15,             
   batch_size = 32,        
   validation_data = list(x_val, y_val)   
 )
