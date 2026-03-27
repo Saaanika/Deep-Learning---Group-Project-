@@ -159,14 +159,13 @@ y_train_final <- y_train[-val_id, ]
 embedding_dim <- 75  #as 100 was used for 20,000 word vocabulary from tutorial, 75 was chosen (proportional) 
 
 
-# 5.1 - One Hidden Dense Layer (with Embedding) 
+# 5.1 - One Hidden Dense Layer 
 ff_model1 <- keras_model_sequential() %>%
   layer_embedding(input_dim    = num_words,      #total number of words (max features)
                   output_dim   = embedding_dim) %>%  #embedding dimension
   layer_flatten() %>%
   layer_dense(units = 32, activation = "relu") %>%  #hidden dense layer, values from tutorial 9
   layer_dense(units = 5, activation = "softmax")    #softmax used for multiclass classification problems (5 classes)
-
 
 # Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
 ff_model1$build(input_shape = shape(NULL, maxlen))
@@ -181,9 +180,111 @@ ff_model1 %>% compile(
   metrics = c("accuracy")
 )
 
-
 # Fitting the model to the data
 ff_model1history <- ff_model1 %>% fit(
+  x_train_final, y_train_final,
+  epochs = 20,             
+  batch_size = 32,        #values taken from tutorial (will be kept consistent for all models for fair comparison), 
+  validation_data = list(x_val, y_val)   
+)
+
+
+# 5.2 - One Hidden Dense Layer (with Dropout) 
+ff_model12 <- keras_model_sequential() %>%
+  layer_embedding(input_dim    = num_words,      #total number of words (max features)
+                  output_dim   = embedding_dim) %>%  #embedding dimension
+  layer_flatten() %>%
+  layer_dense(units = 32, activation = "relu") %>%  #hidden dense layer, values from tutorial 9
+  layer_dropout(rate = 0.5) %>%                     #adding dropout layer (rate of 50%)
+  layer_dense(units = 5, activation = "softmax")    #softmax used for multiclass classification problems (5 classes)
+
+# Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
+ff_model12$build(input_shape = shape(NULL, maxlen))
+
+# Getting model summary 
+summary(ff_model12)   #total and trainable parameters: 1,278,797
+
+# Compiling first FF model
+ff_model12 %>% compile(
+  optimizer = optimizer_rmsprop(learning_rate = 1e-4),      #rmsprop commonly used (keeping learning rate value low)
+  loss = "categorical_crossentropy",                        #multiclass classification problem
+  metrics = c("accuracy")
+)
+
+# Fitting the model to the data
+ff_model12history <- ff_model12 %>% fit(
+  x_train_final, y_train_final,
+  epochs = 20,             
+  batch_size = 32,        
+  validation_data = list(x_val, y_val)   
+)
+
+
+# 5.3 - Two Hidden Dense Layers
+
+ff_model2 <- keras_model_sequential() %>%
+  layer_embedding(
+    input_dim = num_words,
+    output_dim = embedding_dim,
+    input_length = maxlen
+  ) %>%
+  layer_flatten() %>%
+  layer_dense(units = 64, activation = "relu") %>%
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dense(units = 5, activation = "softmax")
+
+# Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
+ff_model2$build(input_shape = shape(NULL, maxlen))
+
+# Getting model summary 
+summary(ff_model2)   #total and trainable parameters: 1,434,509
+
+# Compiling second FF model
+ff_model2 %>% compile(
+  optimizer = optimizer_rmsprop(learning_rate = 1e-4),
+  loss = "categorical_crossentropy",
+  metrics = c("accuracy")
+)
+
+# Fitting the model to the data
+ff_model2history <- ff_model2 %>% fit(
+  x_train_final, y_train_final,
+  epochs = 20,             #values taken from tutorial (will be kept consistent for all models for fair comparison)
+  batch_size = 32,        
+  validation_data = list(x_val, y_val)   
+)
+
+
+# 5.4 - Two Hidden Dense Layers (with Dropout)
+
+ff_model22 <- keras_model_sequential() %>%
+  layer_embedding(
+    input_dim = num_words,
+    output_dim = embedding_dim,
+    input_length = maxlen
+  ) %>%
+  layer_flatten() %>%
+  layer_dense(units = 64, activation = "relu") %>%
+  layer_dropout(rate = 0.5) %>%                     
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dropout(rate = 0.5) %>%                     #adding dropout layers after each dense layer (rate of 50%)
+  layer_dense(units = 5, activation = "softmax")
+
+# Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
+ff_model22$build(input_shape = shape(NULL, maxlen))
+
+# Getting model summary 
+summary(ff_model22)   #total and trainable parameters: 1,434,509
+
+# Compiling second FF model
+ff_model22 %>% compile(
+  optimizer = optimizer_rmsprop(learning_rate = 1e-4),
+  loss = "categorical_crossentropy",
+  metrics = c("accuracy")
+)
+
+# Fitting the model to the data
+ff_model22history <- ff_model22 %>% fit(
   x_train_final, y_train_final,
   epochs = 20,             #values taken from tutorial (will be kept consistent for all models for fair comparison)
   batch_size = 32,        
