@@ -185,8 +185,8 @@ ff_model1 %>% compile(
 # Fitting the model to the data
 ff_model1history <- ff_model1 %>% fit(
   x_train_final, y_train_final,
-  epochs = 15,             #15 epochs was working the best
-  batch_size = 32,        #values taken from tutorial (will be kept consistent for all models for fair comparison), 
+  epochs = 20,             #values taken from tutorial (will be kept consistent for all models for fair comparison)
+  batch_size = 32,        
   validation_data = list(x_val, y_val)   
 )
 
