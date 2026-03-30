@@ -329,7 +329,7 @@ summary(rnn_model1)   #RNN layer only adds 2,080 params (32*32 + 32*32 + 32); mo
 
 # Compiling first RNN model
 rnn_model1 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),   #adam optimizer, same learning rate across all models
+  optimizer = optimizer_adam(learning_rate = 5e-4),   #adam optimizer, same learning rate across all models
   loss = "categorical_crossentropy",                  #multiclass classification problem
   metrics = c("accuracy")
 )
@@ -355,7 +355,7 @@ rnn_model12$build(input_shape = shape(NULL, maxlen))
 summary(rnn_model12)   #same params as rnn_model1 (dropout doesn't add parameters)
 
 rnn_model12 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),
+  optimizer = optimizer_adam(learning_rate = 5e-4),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -380,7 +380,7 @@ rnn_model2$build(input_shape = shape(NULL, maxlen))
 summary(rnn_model2)   #second RNN layer adds another 2,080 params
 
 rnn_model2 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),
+  optimizer = optimizer_adam(learning_rate = 5e-4),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -407,7 +407,7 @@ rnn_model22$build(input_shape = shape(NULL, maxlen))
 summary(rnn_model22)   #same params as rnn_model2 (dropout doesn't add parameters)
 
 rnn_model22 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),
+  optimizer = optimizer_adam(learning_rate = 5e-4),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -536,3 +536,72 @@ lstm_model22history <- lstm_model22 %>% fit(
   batch_size = 128,
   validation_data = list(x_val, y_val)
 )
+
+# ------------------------------------------------------------------------------
+# Part Nine: Model Comparison
+# ------------------------------------------------------------------------------
+
+# putting all the history objects and names into lists so its easier to loop through
+all_histories <- list(
+  ff_model1history, ff_model12history, ff_model2history, ff_model22history,
+  rnn_model1history, rnn_model12history, rnn_model2history, rnn_model22history,
+  lstm_model1history, lstm_model12history, lstm_model2history, lstm_model22history
+)
+
+model_names <- c(
+  "FF 1-layer", "FF 1-layer+dropout", "FF 2-layer", "FF 2-layer+dropout",
+  "RNN 1-layer", "RNN 1-layer+dropout", "RNN 2-layer", "RNN 2-layer+dropout",
+  "LSTM 1-layer", "LSTM 1-layer+dropout", "LSTM 2-layer", "LSTM 2-layer+dropout"
+)
+
+# Getting the best val accuracy across all epochs for each model, not just the final epoch
+# Some models overfit so their val accuracy peaks early and then drops
+best_val_acc <- sapply(all_histories, function(h) max(h$metrics$val_accuracy))
+names(best_val_acc) <- model_names
+
+# Also getting the final epoch val accuracy to see how much it dropped from the peak
+final_val_acc <- sapply(all_histories, function(h) tail(h$metrics$val_accuracy, 1))
+names(final_val_acc) <- model_names
+
+# Printing val accuracy for each model (best across all epochs vs final epoch)
+cat("\nValidation Accuracy Summary:\n")
+for (i in seq_along(model_names)) {
+  cat(model_names[i], "- Best:", round(best_val_acc[i], 3), 
+      " Final:", round(final_val_acc[i], 3), "\n")
+}
+
+# Looking at which model did best
+best_idx <- which.max(best_val_acc)
+cat("\nBest model:", model_names[best_idx], round(best_val_acc[best_idx], 3), "\n")
+
+# ------------------------------------------------------------------------------
+# Part Ten: Training History Plots
+# ------------------------------------------------------------------------------
+
+# Plotting training curves in 2x2 grids for each model type to show training vs validation accuracy and loss over epochs
+# Useful for seeing overfitting
+
+# FF models
+par(mfrow = c(2, 2))
+plot(ff_model1history, main = "FF 1-layer")
+plot(ff_model12history, main = "FF 1-layer + Dropout")
+plot(ff_model2history, main = "FF 2-layer")
+plot(ff_model22history, main = "FF 2-layer + Dropout")
+par(mfrow = c(1, 1))
+
+# RNN models
+par(mfrow = c(2, 2))
+plot(rnn_model1history, main = "RNN 1-layer")
+plot(rnn_model12history, main = "RNN 1-layer + Dropout")
+plot(rnn_model2history, main = "RNN 2-layer")
+plot(rnn_model22history, main = "RNN 2-layer + Dropout")
+par(mfrow = c(1, 1))
+
+# LSTM models
+par(mfrow = c(2, 2))
+plot(lstm_model1history, main = "LSTM 1-layer")
+plot(lstm_model12history, main = "LSTM 1-layer + Dropout")
+plot(lstm_model2history, main = "LSTM 2-layer")
+plot(lstm_model22history, main = "LSTM 2-layer + Dropout")
+par(mfrow = c(1, 1))
+
