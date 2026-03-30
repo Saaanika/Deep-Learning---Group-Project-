@@ -168,7 +168,7 @@ y_val_int <- y_train_int[I][val_id]
 # ------------------------------------------------------------------------------
 
 # Setting embedding dimension
-embedding_dim <- 32  # AF: reduced from 75 because smaller embedding better suited for short tweets (480K vs 1.125M embedding params)  
+embedding_dim <- 32  # Smaller embedding better suited for short tweets (480K vs 1.125M embedding params)  
 
 # FF models use layer_flatten() to collapse the embedding output (64 tokens x 32 dims = 2048 features) into a single vector
 # this creates a very large input to the dense layers which makes FF prone to overfitting (memorizing training patterns)
@@ -329,7 +329,7 @@ summary(rnn_model1)   #RNN layer only adds 2,080 params (32*32 + 32*32 + 32); mo
 
 # Compiling first RNN model
 rnn_model1 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 5e-4),   #adam optimizer, same learning rate across all models
+  optimizer = optimizer_adam(learning_rate = 1e-3),   #adam optimizer, same learning rate across all models
   loss = "categorical_crossentropy",                  #multiclass classification problem
   metrics = c("accuracy")
 )
@@ -355,7 +355,7 @@ rnn_model12$build(input_shape = shape(NULL, maxlen))
 summary(rnn_model12)   #same params as rnn_model1 (dropout doesn't add parameters)
 
 rnn_model12 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 5e-4),
+  optimizer = optimizer_adam(learning_rate = 1e-3),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -380,7 +380,7 @@ rnn_model2$build(input_shape = shape(NULL, maxlen))
 summary(rnn_model2)   #second RNN layer adds another 2,080 params
 
 rnn_model2 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 5e-4),
+  optimizer = optimizer_adam(learning_rate = 1e-3),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -407,7 +407,7 @@ rnn_model22$build(input_shape = shape(NULL, maxlen))
 summary(rnn_model22)   #same params as rnn_model2 (dropout doesn't add parameters)
 
 rnn_model22 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 5e-4),
+  optimizer = optimizer_adam(learning_rate = 1e-3),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
