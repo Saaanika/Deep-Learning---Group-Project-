@@ -650,7 +650,6 @@ all_models <- list(
 # Computing RPS and accuracy for each model on validation set (for side-by-side comparison)
 
 rps_results <- numeric(length(all_models))    
-acc_results <- numeric(length(all_models))
 
 for (i in seq_along(all_models)) {
   
@@ -662,25 +661,20 @@ for (i in seq_along(all_models)) {
   true_class <- apply(y_val, 1, which.max) - 1
   
   # Computing metrics
-  acc_results[i] <- mean(pred_class == true_class)
   rps_results[i] <- rps_score(y_val, pred_probs)
 }
 
 # Creating a clean results table 
 results <- data.frame(
   Model = model_names,
-  Accuracy = round(acc_results, 4),
   RPS = round(rps_results, 4)
 )
 
 print(results)
 
 # Identifying best models in terms of RPS and accuracy
-best_acc_idx <- which.max(acc_results)
 best_rps_idx <- which.min(rps_results)
 
-cat("\nBest model by Accuracy:", model_names[best_acc_idx],
-    "-", round(acc_results[best_acc_idx], 4), "\n")
 
 cat("Best model by RPS:", model_names[best_rps_idx],
     "-", round(rps_results[best_rps_idx], 4), "\n")
