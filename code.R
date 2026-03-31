@@ -607,7 +607,165 @@ par(mfrow = c(1, 1))
 
 
 # ------------------------------------------------------------------------------
-# Part Eleven: Ranked Probability Score (RPS) Evaluation
+# Part Eleven: Retraining Models at Best Epoch 
+# ------------------------------------------------------------------------------
+
+# Retraining each model for exactly the number of epochs that gave best val accuracy (this has to be done as we are using a custom function for our evaluation metric)
+# This ensures test set evaluation uses peak performance weights, not overfit final weights
+# Best epochs from Part Nine: FF(3,3,2,3), RNN(18,19,7,4), LSTM(10,14,18,18)
+
+set.seed(123)
+
+# FF models retrained at best epoch
+ff_model1_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_flatten() %>%
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dense(units = 5, activation = "softmax")
+ff_model1_best$build(input_shape = shape(NULL, maxlen))
+ff_model1_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                           loss = "categorical_crossentropy", metrics = c("accuracy"))
+ff_model1_best %>% fit(x_train_final, y_train_final, epochs = 3,
+                       batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+ff_model12_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_flatten() %>%
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 5, activation = "softmax")
+ff_model12_best$build(input_shape = shape(NULL, maxlen))
+ff_model12_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                            loss = "categorical_crossentropy", metrics = c("accuracy"))
+ff_model12_best %>% fit(x_train_final, y_train_final, epochs = 3,
+                        batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+ff_model2_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_flatten() %>%
+  layer_dense(units = 64, activation = "relu") %>%
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dense(units = 5, activation = "softmax")
+ff_model2_best$build(input_shape = shape(NULL, maxlen))
+ff_model2_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                           loss = "categorical_crossentropy", metrics = c("accuracy"))
+ff_model2_best %>% fit(x_train_final, y_train_final, epochs = 2,
+                       batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+ff_model22_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_flatten() %>%
+  layer_dense(units = 64, activation = "relu") %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 32, activation = "relu") %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 5, activation = "softmax")
+ff_model22_best$build(input_shape = shape(NULL, maxlen))
+ff_model22_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                            loss = "categorical_crossentropy", metrics = c("accuracy"))
+ff_model22_best %>% fit(x_train_final, y_train_final, epochs = 3,
+                        batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+# RNN models retrained at best epoch
+rnn_model1_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_simple_rnn(units = 32) %>%
+  layer_dense(units = 5, activation = "softmax")
+rnn_model1_best$build(input_shape = shape(NULL, maxlen))
+rnn_model1_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                            loss = "categorical_crossentropy", metrics = c("accuracy"))
+rnn_model1_best %>% fit(x_train_final, y_train_final, epochs = 18,
+                        batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+rnn_model12_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_simple_rnn(units = 32, dropout = 0.2) %>%
+  layer_dense(units = 5, activation = "softmax")
+rnn_model12_best$build(input_shape = shape(NULL, maxlen))
+rnn_model12_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                             loss = "categorical_crossentropy", metrics = c("accuracy"))
+rnn_model12_best %>% fit(x_train_final, y_train_final, epochs = 19,
+                         batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+rnn_model2_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_simple_rnn(units = 32, return_sequences = TRUE) %>%
+  layer_simple_rnn(units = 32) %>%
+  layer_dense(units = 5, activation = "softmax")
+rnn_model2_best$build(input_shape = shape(NULL, maxlen))
+rnn_model2_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                            loss = "categorical_crossentropy", metrics = c("accuracy"))
+rnn_model2_best %>% fit(x_train_final, y_train_final, epochs = 7,
+                        batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+rnn_model22_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_simple_rnn(units = 32, return_sequences = TRUE, dropout = 0.2) %>%
+  layer_simple_rnn(units = 32, dropout = 0.2) %>%
+  layer_dense(units = 5, activation = "softmax")
+rnn_model22_best$build(input_shape = shape(NULL, maxlen))
+rnn_model22_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                             loss = "categorical_crossentropy", metrics = c("accuracy"))
+rnn_model22_best %>% fit(x_train_final, y_train_final, epochs = 4,
+                         batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+# LSTM models retrained at best epoch
+lstm_model1_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_lstm(units = 64) %>%
+  layer_dense(units = 5, activation = "softmax")
+lstm_model1_best$build(input_shape = shape(NULL, maxlen))
+lstm_model1_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                             loss = "categorical_crossentropy", metrics = c("accuracy"))
+lstm_model1_best %>% fit(x_train_final, y_train_final, epochs = 10,
+                         batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+lstm_model12_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_lstm(units = 64, dropout = 0.2, recurrent_dropout = 0.2) %>%
+  layer_dense(units = 5, activation = "softmax")
+lstm_model12_best$build(input_shape = shape(NULL, maxlen))
+lstm_model12_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                              loss = "categorical_crossentropy", metrics = c("accuracy"))
+lstm_model12_best %>% fit(x_train_final, y_train_final, epochs = 14,
+                          batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+lstm_model2_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_lstm(units = 64, return_sequences = TRUE) %>%
+  layer_lstm(units = 64) %>%
+  layer_dense(units = 5, activation = "softmax")
+lstm_model2_best$build(input_shape = shape(NULL, maxlen))
+lstm_model2_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                             loss = "categorical_crossentropy", metrics = c("accuracy"))
+lstm_model2_best %>% fit(x_train_final, y_train_final, epochs = 18,
+                         batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+lstm_model22_best <- keras_model_sequential() %>%
+  layer_embedding(input_dim = num_words, output_dim = embedding_dim) %>%
+  layer_lstm(units = 64, return_sequences = TRUE, dropout = 0.2, recurrent_dropout = 0.2) %>%
+  layer_lstm(units = 64, dropout = 0.2, recurrent_dropout = 0.2) %>%
+  layer_dense(units = 5, activation = "softmax")
+lstm_model22_best$build(input_shape = shape(NULL, maxlen))
+lstm_model22_best %>% compile(optimizer = optimizer_adam(learning_rate = 1e-3),
+                              loss = "categorical_crossentropy", metrics = c("accuracy"))
+lstm_model22_best %>% fit(x_train_final, y_train_final, epochs = 18,
+                          batch_size = 128, validation_data = list(x_val, y_val), verbose = 0)
+
+
+# ------------------------------------------------------------------------------
+# Part Twelve: Accuracy and Ranked Probability Score (RPS) Evaluation on Test Data
 # ------------------------------------------------------------------------------
 
 # RPS is a scoring rule for ordinal/multicategorical probabilistic forecasts; it compares the predicted CDF against the observed CDF at each threshold
@@ -618,6 +776,7 @@ par(mfrow = c(1, 1))
 #     "Extremely Negative" is penalized far more than being off by one class
 #   - Lower is better where 0 means perfect prediction
 #   - Respects the ordinal structure: EN < N < Neu < P < EP
+# Metrics will be calculated on the completely unseen test dataset
 
 
 # Creating a function to calculate the RPS score
@@ -637,45 +796,46 @@ rps_score <- function(y_true_onehot, y_pred_probs) {     #y_true: one-hot matrix
 }
 
 
-
-# Applying RPS to all 12 models on the validation set
-
-all_models <- list(
-  ff_model1, ff_model12, ff_model2, ff_model22,
-  rnn_model1, rnn_model12, rnn_model2, rnn_model22,
-  lstm_model1, lstm_model12, lstm_model2, lstm_model22
+# Applying RPS to all the 12 best models
+all_best_models <- list(
+  ff_model1_best, ff_model12_best, ff_model2_best, ff_model22_best,
+  rnn_model1_best, rnn_model12_best, rnn_model2_best, rnn_model22_best,
+  lstm_model1_best, lstm_model12_best, lstm_model2_best, lstm_model22_best
 )
 
+acc_test <- numeric(length(all_best_models))
+rps_test <- numeric(length(all_best_models))
 
-# Computing RPS and accuracy for each model on validation set (for side-by-side comparison)
 
-rps_results <- numeric(length(all_models))    
-
-for (i in seq_along(all_models)) {
+# Computing RPS and accuracy for each model on the test set 
+for (i in seq_along(all_best_models)) {
   
   # Predicted probabilities from softmax output
-  pred_probs <- predict(all_models[[i]], x_val)
+  pred_probs  <- predict(all_best_models[[i]], x_test) 
   
   # Converting probabilities to predicted class indices (0–4)
-  pred_class <- apply(pred_probs, 1, which.max) - 1
-  true_class <- apply(y_val, 1, which.max) - 1
+  pred_class  <- apply(pred_probs, 1, which.max) - 1
+  true_class  <- apply(y_test,     1, which.max) - 1
   
-  # Computing metrics
-  rps_results[i] <- rps_score(y_val, pred_probs)
+  # Computing RPS and accuracy metrics
+  acc_test[i] <- mean(pred_class == true_class)
+  rps_test[i] <- rps_score(y_test, pred_probs)
 }
 
+
 # Creating a clean results table 
-results <- data.frame(
-  Model = model_names,
-  RPS = round(rps_results, 4)
+results_test <- data.frame(
+  Model      = model_names,
+  Test_Acc   = round(acc_test, 4),
+  Test_RPS   = round(rps_test, 4)
 )
 
-print(results)
+cat("\n--- Test Set Performance ---\n")
+print(results_test)
 
 # Identifying best models in terms of RPS and accuracy
-best_rps_idx <- which.min(rps_results)
-
-
-cat("Best model by RPS:", model_names[best_rps_idx],
-    "-", round(rps_results[best_rps_idx], 4), "\n")
+cat("\nBest model by Test Accuracy:", model_names[which.max(acc_test)],
+    "-", round(max(acc_test), 4), "\n")
+cat("Best model by Test RPS:     ", model_names[which.min(rps_test)],
+    "-", round(min(rps_test), 4), "(lower is better)\n")
 
