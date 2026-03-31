@@ -15,8 +15,8 @@ library(keras3)
 
 
 # ------------------------------------------------------------------------------
-
 # Part One: Loading Data 
+# ------------------------------------------------------------------------------
 
 # Loading train and test data into dataframes 
 train_df <- read.csv("Corona_NLP_train.csv", stringsAsFactors = FALSE)
@@ -45,8 +45,8 @@ summary(test_labels_raw)      #3798 test samples (no missing labels)
 
 
 # ------------------------------------------------------------------------------
-
 # Part Two: Exploring to Define Parameters
+# ------------------------------------------------------------------------------
 
 # `maxlen` controls the length of each input sequence fed into the model (since each sequence must be of same length, shorter tweets get padded with 0 and longer tweets may get truncated); need to find max number of words in a tweet 
 
@@ -84,8 +84,8 @@ num_words <- 15000L
 
 
 # ------------------------------------------------------------------------------
-
 # Part Three: Building and Applying Vectorizer
+# ------------------------------------------------------------------------------
 
 vec_int <- layer_text_vectorization(
   max_tokens = num_words,                      #limiting vocabulary to most frequent words
@@ -115,8 +115,8 @@ cat("x_test shape: ", paste(dim(x_test), collapse = " x "))     #3798 x 64
 
 
 # ------------------------------------------------------------------------------
-
 # Part Four: Encoding Labels 
+# ------------------------------------------------------------------------------
 
 # Defining the 5 ordered sentiment classes (from most negative to most positive)
 sentiment_levels <- c("Extremely Negative", "Negative", "Neutral",
@@ -138,8 +138,8 @@ prop.table(table(train_labels_raw))
 
 
 # ------------------------------------------------------------------------------
-
 # Part Five: Shuffling and Splitting Training Data 
+# ------------------------------------------------------------------------------
 
 # Setting seed before the shuffle so the entire pipeline (shuffle + val split) is reproducible
 set.seed(123)
@@ -189,7 +189,7 @@ summary(ff_model1)
 
 # Compiling first FF model
 ff_model1 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),          # AF: changed from optimizer_rmsprop(learning_rate = 1e-4)
+  optimizer = optimizer_adam(learning_rate = 1e-3),         #adam optimizer, same learning rate across all models
   loss = "categorical_crossentropy",                        #multiclass classification problem
   metrics = c("accuracy")
 )
@@ -197,9 +197,9 @@ ff_model1 %>% compile(
 # Fitting the model to the data
 ff_model1history <- ff_model1 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,            # AF: changed from 15 to 20
-  batch_size = 128,       # AF: changed from 32 to 128
-  validation_data = list(x_val, y_val)   
+  epochs = 20,            
+  batch_size = 128,       
+  validation_data = list(x_val, y_val)      
 )
 
 
@@ -209,7 +209,7 @@ ff_model12 <- keras_model_sequential() %>%
                   output_dim   = embedding_dim) %>%  #embedding dimension
   layer_flatten() %>%
   layer_dense(units = 32, activation = "relu") %>%  #hidden dense layer, values from tutorial 9
-  layer_dropout(rate = 0.5) %>%                     #adding dropout layer (rate of 50%)
+  layer_dropout(rate = 0.2) %>%                     #adding dropout layer (rate of 20%)
   layer_dense(units = 5, activation = "softmax")    #softmax used for multiclass classification problems (5 classes)
 
 # Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
@@ -220,7 +220,7 @@ summary(ff_model12)
 
 # Compiling first FF model
 ff_model12 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),          # AF: changed from optimizer_rmsprop(learning_rate = 1e-4)
+  optimizer = optimizer_adam(learning_rate = 1e-3),          
   loss = "categorical_crossentropy",                        #multiclass classification problem
   metrics = c("accuracy")
 )
@@ -228,9 +228,9 @@ ff_model12 %>% compile(
 # Fitting the model to the data
 ff_model12history <- ff_model12 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             # AF: changed from 15 to 20
-  batch_size = 128,        # AF: changed from 32 to 128
-  validation_data = list(x_val, y_val)   
+  epochs = 20,             
+  batch_size = 128,        
+  validation_data = list(x_val, y_val)      
 )
 
 
@@ -255,7 +255,7 @@ summary(ff_model2)
 
 # Compiling second FF model
 ff_model2 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),   # AF: changed from optimizer_rmsprop(learning_rate = 1e-4)
+  optimizer = optimizer_adam(learning_rate = 1e-3),   
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -263,9 +263,9 @@ ff_model2 %>% compile(
 # Fitting the model to the data
 ff_model2history <- ff_model2 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             # AF: changed from 15 to 20
-  batch_size = 128,        # AF: changed from 32 to 128
-  validation_data = list(x_val, y_val)   
+  epochs = 20,             
+  batch_size = 128,        
+  validation_data = list(x_val, y_val)          
 )
 
 
@@ -279,9 +279,9 @@ ff_model22 <- keras_model_sequential() %>%
   ) %>%
   layer_flatten() %>%
   layer_dense(units = 64, activation = "relu") %>%
-  layer_dropout(rate = 0.5) %>%                     
+  layer_dropout(rate = 0.2) %>%                     
   layer_dense(units = 32, activation = "relu") %>%
-  layer_dropout(rate = 0.5) %>%                     #adding dropout layers after each dense layer (rate of 50%)
+  layer_dropout(rate = 0.2) %>%                     #adding dropout layers after each dense layer (rate of 20%)
   layer_dense(units = 5, activation = "softmax")
 
 # Specify input shape to ensure the model is built, as input_length is deprecated in the embedding layer
@@ -292,7 +292,7 @@ summary(ff_model22)
 
 # Compiling second FF model
 ff_model22 %>% compile(
-  optimizer = optimizer_adam(learning_rate = 1e-3),   # AF: changed from optimizer_rmsprop(learning_rate = 1e-4)
+  optimizer = optimizer_adam(learning_rate = 1e-3),   
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
 )
@@ -300,8 +300,8 @@ ff_model22 %>% compile(
 # Fitting the model to the data
 ff_model22history <- ff_model22 %>% fit(
   x_train_final, y_train_final,
-  epochs = 20,             # AF: changed from 15 to 20
-  batch_size = 128,        # AF: changed from 32 to 128
+  epochs = 20,             
+  batch_size = 128,        
   validation_data = list(x_val, y_val)   
 )
 
@@ -604,4 +604,84 @@ plot(lstm_model12history, main = "LSTM 1-layer + Dropout")
 plot(lstm_model2history, main = "LSTM 2-layer")
 plot(lstm_model22history, main = "LSTM 2-layer + Dropout")
 par(mfrow = c(1, 1))
+
+
+# ------------------------------------------------------------------------------
+# Part Eleven: Ranked Probability Score (RPS) Evaluation
+# ------------------------------------------------------------------------------
+
+# RPS is a scoring rule for ordinal/multicategorical probabilistic forecasts; it compares the predicted CDF against the observed CDF at each threshold
+# RPS = (1/(K-1)) * sum_{k=1}^{K-1} (CDF_pred[k] - CDF_true[k])^2
+# Key properties:
+#   - Uses the FULL predicted probability distribution 
+#   - Distance-sensitive: predicting "Extremely Positive" when truth is 
+#     "Extremely Negative" is penalized far more than being off by one class
+#   - Lower is better where 0 means perfect prediction
+#   - Respects the ordinal structure: EN < N < Neu < P < EP
+
+
+# Creating a function to calculate the RPS score
+rps_score <- function(y_true_onehot, y_pred_probs) {     #y_true: one-hot matrix (n_samples x 5)
+                                                         #y_pred: softmax probability matrix (n_samples x 5)
+  K <- ncol(y_true_onehot)    #number of classes (5)
+  
+  # Cumulative probabilities for predicted and true labels
+  cdf_pred <- t(apply(y_pred_probs, 1, cumsum))
+  cdf_true <- t(apply(y_true_onehot, 1, cumsum))
+  
+  # Computing RPS for each observation
+  rps_each <- rowSums((cdf_pred[, 1:(K - 1)] - cdf_true[, 1:(K - 1)])^2) / (K - 1)   #last column excluded for both as CDF is 1 (no contribution); squaring penalizes larger errors more 
+  
+  # Returning mean RPS across all observations
+  return(mean(rps_each))
+}
+
+
+
+# Applying RPS to all 12 models on the validation set
+
+all_models <- list(
+  ff_model1, ff_model12, ff_model2, ff_model22,
+  rnn_model1, rnn_model12, rnn_model2, rnn_model22,
+  lstm_model1, lstm_model12, lstm_model2, lstm_model22
+)
+
+
+# Computing RPS and accuracy for each model on validation set (for side-by-side comparison)
+
+rps_results <- numeric(length(all_models))    
+acc_results <- numeric(length(all_models))
+
+for (i in seq_along(all_models)) {
+  
+  # Predicted probabilities from softmax output
+  pred_probs <- predict(all_models[[i]], x_val)
+  
+  # Converting probabilities to predicted class indices (0–4)
+  pred_class <- apply(pred_probs, 1, which.max) - 1
+  true_class <- apply(y_val, 1, which.max) - 1
+  
+  # Computing metrics
+  acc_results[i] <- mean(pred_class == true_class)
+  rps_results[i] <- rps_score(y_val, pred_probs)
+}
+
+# Creating a clean results table 
+results <- data.frame(
+  Model = model_names,
+  Accuracy = round(acc_results, 4),
+  RPS = round(rps_results, 4)
+)
+
+print(results)
+
+# Identifying best models in terms of RPS and accuracy
+best_acc_idx <- which.max(acc_results)
+best_rps_idx <- which.min(rps_results)
+
+cat("\nBest model by Accuracy:", model_names[best_acc_idx],
+    "-", round(acc_results[best_acc_idx], 4), "\n")
+
+cat("Best model by RPS:", model_names[best_rps_idx],
+    "-", round(rps_results[best_rps_idx], 4), "\n")
 
