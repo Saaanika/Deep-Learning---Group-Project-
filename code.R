@@ -559,6 +559,11 @@ model_names <- c(
 best_val_acc <- sapply(all_histories, function(h) max(h$metrics$val_accuracy))
 names(best_val_acc) <- model_names
 
+
+# Epoch at which best val accuracy was achieved
+best_epoch <- sapply(all_histories, function(h) which.max(h$metrics$val_accuracy))
+names(best_epoch) <- model_names
+
 # Also getting the final epoch val accuracy to see how much it dropped from the peak
 final_val_acc <- sapply(all_histories, function(h) tail(h$metrics$val_accuracy, 1))
 names(final_val_acc) <- model_names
@@ -566,13 +571,16 @@ names(final_val_acc) <- model_names
 # Printing val accuracy for each model (best across all epochs vs final epoch)
 cat("\nValidation Accuracy Summary:\n")
 for (i in seq_along(model_names)) {
-  cat(model_names[i], "- Best:", round(best_val_acc[i], 3), 
+  cat(model_names[i], "- Best:", round(best_val_acc[i], 3),
+      " at Epoch:", best_epoch[i],
       " Final:", round(final_val_acc[i], 3), "\n")
 }
 
 # Looking at which model did best
 best_idx <- which.max(best_val_acc)
-cat("\nBest model:", model_names[best_idx], round(best_val_acc[best_idx], 3), "\n")
+cat("\nBest model:", model_names[best_idx], round(best_val_acc[best_idx], 3), 
+    "at Epoch:", best_epoch[best_idx], "\n")
+
 
 # ------------------------------------------------------------------------------
 # Part Ten: Training History Plots
